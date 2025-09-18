@@ -1,0 +1,20 @@
+include README.md
+include LICENSE
+include pyproject.toml
+include setup.py
+recursive-include voice_bank *.py
+recursive-include voice_bank *.yaml
+recursive-include voice_bank *.yml
+recursive-include voice_bank *.txt
+recursive-include voice_bank *.json
+recursive-include samples *.ds
+recursive-include samples *.txt
+recursive-include artifacts *.onnx
+recursive-include artifacts *.yaml
+recursive-include artifacts *.yml
+recursive-include artifacts *.txt
+recursive-include artifacts *.json
+recursive-include artifacts *.emb
+recursive-include artifacts *.png
+recursive-include artifacts *.url
+recursive-include artifacts *.pdf

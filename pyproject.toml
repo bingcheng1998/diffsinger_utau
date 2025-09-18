@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "diffsinger-utau"
+version = "0.1.0"
+description = "DiffSinger UTAU inference toolkit with CLI"
+readme = "README.md"
+requires-python = ">=3.8,<3.9"
+license = { text = "MIT" }
+authors = [
+  { name = "Your Name" }
+]
+dependencies = [
+  "Setuptools<81",
+  "numpy<2.0.0",
+  "librosa<0.10.0",
+  "PyYAML",
+  "onnxruntime~=1.16.0",
+  "torch==1.13.1",
+  "torchaudio==0.13.1",
+  "pypinyin"
+]
+
+[project.optional-dependencies]
+viz = ["matplotlib>=3.5"]
+dev = [
+    "pytest>=6.0",
+    "black>=22.0",
+    "flake8>=4.0",
+    "mypy>=0.900"
+]
+
+[project.scripts]
+dsutau = "voice_bank.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/OmniAiOrg/diffsinger-utau"
+Repository = "https://github.com/OmniAiOrg/diffsinger-utau"
+Issues = "https://github.com/OmniAiOrg/diffsinger-utau/issues"
+
+[tool.setuptools]
+package-dir = {"" = "."}
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = [
+  "voice_bank",
+  "voice_bank.*",
+]
+
