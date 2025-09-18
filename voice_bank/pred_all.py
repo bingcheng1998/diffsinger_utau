@@ -327,7 +327,7 @@ def main():
         return
     
     # 读取DS文件
-    ds_file = "samples/07_春江花月夜.1.ds"
+    ds_file = "samples/07_春江花月夜.ds"
     if not Path(ds_file).exists():
         print(f"错误: DS文件不存在: {ds_file}")
         print("请确保DS文件存在于指定路径")

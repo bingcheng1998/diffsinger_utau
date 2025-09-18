@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "diffsinger-utau"
-version = "0.1.0"
+version = "0.1.1.dev1"
 description = "DiffSinger UTAU inference toolkit with CLI"
 readme = "README.md"
 requires-python = ">=3.8,<3.9"
@@ -36,9 +36,9 @@ dev = [
 dsutau = "voice_bank.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/OmniAiOrg/diffsinger-utau"
-Repository = "https://github.com/OmniAiOrg/diffsinger-utau"
-Issues = "https://github.com/OmniAiOrg/diffsinger-utau/issues"
+Homepage = "https://github.com/bingcheng1998/diffsinger_utau"
+Repository = "https://github.com/bingcheng1998/diffsinger-utau"
+Issues = "https://github.com/bingcheng1998/diffsinger-utau/issues"
 
 [tool.setuptools]
 package-dir = {"" = "."}

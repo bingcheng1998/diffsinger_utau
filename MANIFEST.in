@@ -9,12 +9,7 @@ recursive-include voice_bank *.txt
 recursive-include voice_bank *.json
 recursive-include samples *.ds
 recursive-include samples *.txt
-recursive-include artifacts *.onnx
-recursive-include artifacts *.yaml
-recursive-include artifacts *.yml
-recursive-include artifacts *.txt
-recursive-include artifacts *.json
-recursive-include artifacts *.emb
-recursive-include artifacts *.png
-recursive-include artifacts *.url
-recursive-include artifacts *.pdf
+
+# 不将大型模型与输出目录打包进入 sdist
+prune artifacts
+prune output

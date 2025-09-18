@@ -1,6 +1,7 @@
 # DiffSinger UTAU
 
 DiffSinger UTAU 推理工具包，提供命令行工具和 Python API 进行语音合成。
+基于 [diffsinger](https://diffsinger.com/) 项目，兼容 OpenUtau 声库。
 
 ## 功能特性
 
@@ -34,21 +35,35 @@ pip install diffsinger-utau
 
 ## 使用方法
 
+### 下载声库
+
+什么是声库？声库可以理解为`歌唱者`的模型，有着各自的音色等特性。
+
+社区提供了[DiffSinger自制声库分享](https://docs.qq.com/sheet/DQXNDY0pPaEpOc3JN)，如果你不确定下载哪个，推荐从[zhibin club](https://www.zhibin.club/)下载[姜柯JiangKe](https://pan.quark.cn/s/254f030af8cb#/list/share/0929019064004907b7b95212c03066ed)声库开始尝试。
+
+下载声库后，需要解压，解压缩后的路径可以作为程序参数进行推理。
+
+### 下载示例 ds 文件
+
+什么是 ds 文件？ds 文件是修改后缀后的标准json文件，内容为歌曲的内容，包含歌词、音高等内容。
+
+社区提供了[示例文件](https://github.com/openvpi/DiffSinger/tree/main/samples)，建议从示例文件推理开始尝试。
+
 ### 命令行工具
 
 ```bash
 # 基本用法
-dsutau samples/07_春江花月夜.1.ds
+dsutau samples/07_春江花月夜.ds
 
 # 指定语音库和参数
-dsutau samples/07_春江花月夜.1.ds \
+dsutau samples/07_春江花月夜.ds \
   --voice-bank artifacts/JiangKe_DiffSinger_CE_25.06 \
   --lang zh \
   --speaker "jiangke" \
-  --key-shift 4 \
+  --key-shift 2 \
   --pitch-steps 10 \
   --variance-steps 10 \
-  --acoustic-steps 50 \
+  --acoustic-steps 20 \
   --gender 0.0 \
   --output output/pred_all
 ```
@@ -65,7 +80,7 @@ voice_bank = Path("artifacts/JiangKe_DiffSinger_CE_25.06")
 predictor = PredAll(voice_bank)
 
 # 读取 DS 文件
-ds = DSReader("samples/07_春江花月夜.1.ds").read_ds()[0]
+ds = DSReader("samples/07_春江花月夜.ds").read_ds()[0]
 
 # 执行完整推理
 results = predictor.predict_full_pipeline(
@@ -93,7 +108,7 @@ print(f"生成音频: {results['audio_path']}")
 - `--pitch-steps`: 音高扩散采样步数（默认: 10）
 - `--variance-steps`: 方差扩散采样步数（默认: 10）
 - `--acoustic-steps`: 声学模型扩散采样步数（默认: 50）
-- `--gender`: 性别参数 [-1, 1]，-1为男性，1为女性（默认: 0）
+- `--gender`: 性别参数 [-1, 1]，-1为男性化，1为女性化（默认: 0）
 - `--output`: 输出目录（默认: output/pred_all）
 - `--no-intermediate`: 不保存中间结果文件
 
@@ -104,7 +119,6 @@ print(f"生成音频: {results['audio_path']}")
 - `step1_duration.ds`: 时长预测结果
 - `step2_pitch.ds`: 音高预测结果
 - `step3_variance.ds`: 方差预测结果
-- `step4_mel_spectrogram.png`: Mel频谱图
 - `step4_mel_data.json`: Mel数据（JSON格式）
 - `step5_final_audio.wav`: 最终音频文件
 - `complete_prediction.ds`: 完整预测结果

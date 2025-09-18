@@ -4,6 +4,7 @@
 import argparse
 from pathlib import Path
 import sys
+import numpy as np
 
 from .pred_all import PredAll
 from .commons.ds_reader import DSReader
@@ -63,18 +64,71 @@ def main(argv=None):
         sys.exit(1)
 
     try:
-        predictor.predict_full_pipeline(
-            ds=ds,
-            lang=args.lang,
-            speaker=args.speaker,
-            key_shift=args.key_shift,
-            pitch_steps=args.pitch_steps,
-            variance_steps=args.variance_steps,
-            acoustic_steps=args.acoustic_steps,
-            gender=args.gender,
-            output_dir=args.output,
-            save_intermediate=args.save_intermediate,
-        )
+        # 逐段预测并根据 offset 混合为单个音频
+        sample_rate = predictor.dsvocoder.sample_rate
+        section_wavs = []
+        section_offsets = []
+
+        output_root = Path(args.output)
+        output_root.mkdir(parents=True, exist_ok=True)
+
+        print(f"共读取到 {len(sections)} 个段落，将逐个预测并进行混合...")
+        for idx, ds in enumerate(sections):
+            try:
+                sec_output_dir = output_root / f"section_{idx:03d}"
+                results = predictor.predict_full_pipeline(
+                    ds=ds,
+                    lang=args.lang,
+                    speaker=args.speaker,
+                    key_shift=args.key_shift,
+                    pitch_steps=args.pitch_steps,
+                    variance_steps=args.variance_steps,
+                    acoustic_steps=args.acoustic_steps,
+                    gender=args.gender,
+                    output_dir=str(sec_output_dir),
+                    save_intermediate=args.save_intermediate,
+                )
+                wav = results.get('wav')
+                if wav is None:
+                    raise RuntimeError("未得到音频结果 'wav'")
+                # offset 字段为秒
+                offset_sec = float(ds.get('offset')) if ds.get('offset') is not None else 0.0
+                section_wavs.append(wav.astype(np.float32))
+                section_offsets.append(offset_sec)
+                print(f"段落 {idx} 完成，offset={offset_sec:.3f}s，长度={len(wav)/sample_rate:.2f}s")
+            except Exception as e:
+                print(f"错误: 段落 {idx} 推理失败: {e}")
+                import traceback
+                traceback.print_exc()
+                sys.exit(1)
+
+        # 混合所有段落
+        if not section_wavs:
+            print("错误: 没有可混合的音频段")
+            sys.exit(1)
+
+        # 计算混合后的总长度（样本数）
+        max_len = 0
+        start_samples = []
+        for wav, offset in zip(section_wavs, section_offsets):
+            start = int(round(offset * sample_rate))
+            end = start + len(wav)
+            start_samples.append(start)
+            if end > max_len:
+                max_len = end
+
+        mix = np.zeros(max_len, dtype=np.float32)
+        for wav, start in zip(section_wavs, start_samples):
+            end = start + len(wav)
+            mix[start:end] += wav
+
+        # 避免溢出，进行简单限幅
+        mix = np.clip(mix, -1.0, 1.0)
+
+        final_path = output_root / "step5_final_audio.wav"
+        predictor.pred_vocoder.save_wav(mix, final_path)
+        print(f"混合完成，已保存到: {final_path}")
+
     except Exception as e:
         print(f"错误: 推理失败: {e}")
         import traceback
