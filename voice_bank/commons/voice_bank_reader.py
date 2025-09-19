@@ -260,13 +260,14 @@ class VoiceBankReader:
         
         def __init__(self, character_yaml_path, character_txt_path):
             self.character_path = character_yaml_path
-            with open(character_yaml_path, 'r') as f:
-                self.character: dict = yaml.safe_load(f)
-                self.subbanks = [self.SubBank(**subbank) for subbank in self.character.get('subbanks', [])]
-                self.portrait = self.character['portrait']
-                self.portrait_opacity = self.character['portrait_opacity']
-                self.singer_type = self.character['singer_type']
-                self.text_file_encoding = self.character.get('text_file_encoding', 'utf-8')
+            if character_yaml_path and os.path.exists(character_yaml_path):
+                with open(character_yaml_path, 'r') as f:
+                    self.character: dict = yaml.safe_load(f)
+                    self.subbanks = [self.SubBank(**subbank) for subbank in self.character.get('subbanks', [])]
+                    self.portrait = self.character.get('portrait')
+                    self.portrait_opacity = self.character['portrait_opacity']
+                    self.singer_type = self.character['singer_type']
+                    self.text_file_encoding = self.character.get('text_file_encoding', 'utf-8')
             
             if character_txt_path is not None and os.path.exists(character_txt_path):
                 with open(character_txt_path, 'r') as f:

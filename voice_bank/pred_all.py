@@ -144,7 +144,6 @@ class PredAll:
         if save_intermediate:
             duration_output_path = output_dir / "step1_duration.ds"
             self.pred_duration.save_duration_results(ds_for_duration, ph_dur_pred, duration_output_path)
-            print(f"时长预测结果已保存到: {duration_output_path}")
         
         results['ph_dur'] = ph_dur_pred
         
@@ -175,7 +174,6 @@ class PredAll:
         if save_intermediate:
             pitch_output_path = output_dir / "step2_pitch.ds"
             self.pred_pitch.save_pitch_results(ds_with_duration, f0_pred, pitch_output_path)
-            print(f"音高预测结果已保存到: {pitch_output_path}")
         
         results['f0'] = f0_pred
         
@@ -210,7 +208,6 @@ class PredAll:
         if save_intermediate:
             variance_output_path = output_dir / "step3_variance.ds"
             self.pred_variance.save_variance_results(ds_with_pitch, variance_pred, variance_output_path)
-            print(f"方差预测结果已保存到: {variance_output_path}")
         
         results['variance'] = variance_pred
         
@@ -255,16 +252,13 @@ class PredAll:
         print(f"{'-'*60}")
         
         # 准备F0数据用于声码器
-        f0_for_vocoder = None
-        if self.dsvocoder.pitch_controllable:
-            # 重采样F0到mel的时间分辨率
-            mel_length = mel_pred.shape[1]
-            f0_for_vocoder = resample_align_curve(
-                f0_pred,
-                original_timestep=self.pred_pitch.timestep,
-                target_timestep=self.pred_vocoder.timestep,
-                align_length=mel_length
-            )
+        mel_length = mel_pred.shape[1]
+        f0_for_vocoder = resample_align_curve(
+            f0_pred,
+            original_timestep=self.pred_pitch.timestep,
+            target_timestep=self.pred_vocoder.timestep,
+            align_length=mel_length
+        )
         
         wav_pred = self.pred_vocoder.predict(mel_pred, f0_for_vocoder)
         

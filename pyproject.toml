@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "diffsinger-utau"
-version = "0.1.2.dev1"
+version = "0.1.3"
 description = "DiffSinger UTAU inference toolkit with CLI"
 readme = "README.md"
 requires-python = ">=3.8,<3.9"
 license = { text = "MIT" }
 authors = [
-  { name = "Your Name" }
+  { name = "Bingcheng Hu", email = "bingcheng@nyu.edu"}
 ]
 dependencies = [
   "Setuptools<81",
@@ -37,8 +37,8 @@ dsutau = "voice_bank.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/bingcheng1998/diffsinger_utau"
-Repository = "https://github.com/bingcheng1998/diffsinger-utau"
-Issues = "https://github.com/bingcheng1998/diffsinger-utau/issues"
+Repository = "https://github.com/bingcheng1998/diffsinger_utau"
+Issues = "https://github.com/bingcheng1998/diffsinger_utau/issues"
 
 [tool.setuptools]
 package-dir = {"" = "."}

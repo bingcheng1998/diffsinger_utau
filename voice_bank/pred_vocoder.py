@@ -24,7 +24,7 @@ from commons.utils import resample_align_curve
 class PredVocoder:
     """声码器预测器"""
     
-    def __init__(self, ds_vocoder):
+    def __init__(self, ds_vocoder: VoiceBankReader.DSVocoder):
         """
         初始化声码器预测器
         
@@ -65,7 +65,7 @@ class PredVocoder:
         inputs = {'mel': mel_data.astype(np.float32)}
         
         # 处理f0数据（如果声码器支持音调控制）
-        if self.ds_vocoder.pitch_controllable and f0_data is not None:
+        if f0_data is not None:
             if len(f0_data.shape) == 1:
                 f0_data = f0_data[None, :]  # [1, T]
             inputs['f0'] = f0_data.astype(np.float32)
@@ -93,8 +93,8 @@ class PredVocoder:
         
         print(f"开始声码器推理...")
         print(f"  Mel形状: {inputs['mel'].shape}")
-        if 'f0' in inputs:
-            print(f"  F0形状: {inputs['f0'].shape}")
+        assert 'f0' in inputs or 'f0' not in self.ds_vocoder.model.input_names, f'inputs: {inputs.keys()}, but requires {self.ds_vocoder.model.input_names}'
+        print(f"  F0形状: {inputs['f0'].shape}")
         
         # 执行ONNX推理
         wav_data = self.ds_vocoder.model.predict(inputs)
