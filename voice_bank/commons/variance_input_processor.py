@@ -79,7 +79,7 @@ class VarianceInputProcessor:
         self.vb_reader = vb_reader  # 保存引用以便后续使用
         self.phoneme_dictionary = vb_reader.phonemes
         print(self.phoneme_dictionary)
-        self.lang_map = vb_reader.languages.content
+        self.lang_map = vb_reader.languages.content if vb_reader.languages is not None else {}
         # lang_map_fn = pathlib.Path(hparams['work_dir']) / 'lang_map.json'
         # if lang_map_fn.exists():
         #     with open(lang_map_fn, 'r', encoding='utf8') as f:
@@ -140,7 +140,7 @@ class VarianceInputProcessor:
                 "This is a multilingual model. "
                 "Please specify a language by --lang option."
             )
-        else:
+        elif self.lang_map:
             assert lang in self.lang_map, f'Unrecognized language name: \'{lang}\'.'
         # 检查模型是否使用语言ID
         use_lang_id = getattr(self.vb_reader, 'use_lang_id', False) if hasattr(self.vb_reader, 'use_lang_id') else hparams.get('use_lang_id', False)

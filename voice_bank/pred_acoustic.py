@@ -69,13 +69,13 @@ class PredAcoustic:
             raise ValueError("DS段落缺少必需参数")
         
         # 语言处理
-        lang_map = self.ds_acoustic.languages.content
+        lang_map = self.ds_acoustic.languages.content if self.ds_acoustic.languages is not None else {}
         if lang is None and self.ds_acoustic.use_lang_id:
             if len(lang_map) > 1:
                 # 优先使用中文，如果没有则使用第一个可用语言
                 if 'zh' in lang_map:
                     lang = 'zh'
-                else:
+                elif lang_map:
                     lang = list(lang_map.keys())[0]
         
         # 音素序列处理
@@ -238,7 +238,7 @@ if __name__ == "__main__":
     pred_acoustic = PredAcoustic(voice_bank_reader.get_dsacoustic())
     
     # 读取DS文件
-    ds_path = Path('samples/00_我多想说再见啊.1_variance.ds')
+    ds_path = Path('samples/08_full_prediction.ds')
     ds_reader = DSReader(ds_path)
     ds = ds_reader.read_ds()
     ds0 = ds[0]
@@ -261,7 +261,12 @@ if __name__ == "__main__":
     output_dir.mkdir(exist_ok=True)
     
     # 保存mel和f0数据为JSON
-    f0_data = np.array(ds0['f0_seq'].split(), dtype=np.float32)
+    f0_data = resample_align_curve(
+        np.array(ds0['f0_seq'].split(), dtype=np.float32),
+        original_timestep=float(ds0['f0_timestep']),
+        target_timestep=pred_acoustic.timestep,
+        align_length=mel.shape[1]
+    )
     json_data_path = output_dir / 'predicted_data.json'
     save_mel_and_f0_as_json(
         mel, f0_data, str(json_data_path),
@@ -271,5 +276,17 @@ if __name__ == "__main__":
         pred_acoustic.ds_acoustic.mel_fmin,
         pred_acoustic.ds_acoustic.mel_fmax
     )
+    
+    # 导入其他预测器
+    from pred_vocoder import PredVocoder
+    dsvocoder = voice_bank_reader.get_dsvocoder()
+    pred_vocoder = PredVocoder(dsvocoder)
+    pred_vocoder = PredVocoder(dsvocoder)
+    
+    wav_data = pred_vocoder.predict(mel, f0_data)
+    
+    # 保存音频文件
+    pred_vocoder.save_wav(wav_data, output_dir / "predicted_audio.wav")
+    
     
     print("推理完成！")

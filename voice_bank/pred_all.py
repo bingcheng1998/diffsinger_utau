@@ -40,7 +40,7 @@ class PredAll:
             voice_bank_path: 语音库路径
         """
         self.voice_bank_path = Path(voice_bank_path)
-        self.voice_bank_reader = VoiceBankReader(self.voice_bank_path, preload_models=True)
+        self.voice_bank_reader = VoiceBankReader(self.voice_bank_path)
         
         # 加载所有模型
         print("正在加载DiffSinger模型...")
@@ -290,10 +290,9 @@ class PredAll:
             print(f"  1. 时长预测: {output_dir}/step1_duration.ds")
             print(f"  2. 音高预测: {output_dir}/step2_pitch.ds")
             print(f"  3. 方差预测: {output_dir}/step3_variance.ds")
-            print(f"  4. Mel频谱图: {output_dir}/step4_mel_spectrogram.png")
-            print(f"  5. Mel数据: {output_dir}/step4_mel_data.json")
-        print(f"  6. 最终音频: {audio_output_path}")
-        print(f"  7. 完整DS文件: {complete_ds_path}")
+            print(f"  4. Mel数据: {output_dir}/step4_mel_data.json")
+        print(f"  5. 最终音频: {audio_output_path}")
+        print(f"  6. 完整DS文件: {complete_ds_path}")
         
         # 计算音频统计信息
         audio_length = len(wav_pred) / self.dsvocoder.sample_rate
@@ -312,7 +311,7 @@ class PredAll:
 def main():
     """主函数"""
     # 语音库路径
-    voice_bank_path = Path("artifacts/JiangKe_DiffSinger_CE_25.06")
+    voice_bank_path = Path("/Users/bc/Music/Singers/Qixuan_v2.0.0_DiffSinger_OpenUtau")
     
     if not voice_bank_path.exists():
         print(f"错误: 语音库路径不存在: {voice_bank_path}")
@@ -320,6 +319,7 @@ def main():
         return
     
     # 创建完整预测器
+    pred_all = PredAll(voice_bank_path)
     try:
         pred_all = PredAll(voice_bank_path)
     except Exception as e:

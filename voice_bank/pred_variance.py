@@ -40,6 +40,7 @@ class PredVariance:
         print(f"  预测breathiness: {dsvariance.predict_breathiness}")
         print(f"  预测voicing: {dsvariance.predict_voicing}")
         print(f"  预测tension: {dsvariance.predict_tension}")
+        print(f"  预测energy: {dsvariance.predict_energy}")
         print(f"  使用语言ID: {dsvariance.use_lang_id}")
         print(f"  说话人数量: {len(dsvariance.speakers) if dsvariance.speakers else 0}")
         
@@ -51,6 +52,13 @@ class PredVariance:
             self.variance_prediction_list.append('voicing')
         if dsvariance.predict_tension:
             self.variance_prediction_list.append('tension')
+        if dsvariance.predict_energy:
+            self.variance_prediction_list.append('energy')
+            
+        if len(self.variance_prediction_list) == 0:
+            for v_name in ['breathiness', 'voicing', 'tension', 'energy']:
+                if v_name in self.dsvariance.variance_model.input_names:
+                    self.variance_prediction_list.append(v_name)
         
         print(f"  预测参数列表: {self.variance_prediction_list}")
         
@@ -75,7 +83,7 @@ class PredVariance:
             variance_inputs['spk_embed'] = spk_embed
         
         # 添加当前的variance参数（用于retake机制）
-        for v_name in ['breathiness', 'voicing', 'tension']:
+        for v_name in ['breathiness', 'voicing', 'tension', 'energy']:
             if v_name in current_variances:
                 variance_inputs[v_name] = current_variances[v_name]
             else:
@@ -125,11 +133,17 @@ class PredVariance:
             inputs['pitch'] = inputs['pitch'].clone()
             inputs['pitch'][0] = torch.from_numpy(pitch_midi)
             print(f"  应用音高移调: {key_shift:+d} 半音")
+            
+        ph_num_str = ds['ph_num']  # 这是字符串，如 "2 2 1 2 2 2 2 2 1 2 2 2 1 1"
+        word_div = np.array(ph_num_str.split(), dtype=np.int64)
+        word_dur = inputs['word_dur'].numpy().astype(np.int64)
         
         # 准备linguistic encoder输入
         linguistic_inputs = {
             'tokens': inputs['tokens'].detach().numpy().astype(np.int64),
-            'ph_dur': inputs['ph_dur'].detach().numpy().astype(np.int64)
+            'ph_dur': inputs['ph_dur'].detach().numpy().astype(np.int64),
+            'word_div': word_div[None].astype(np.int64),
+            'word_dur': word_dur
         }
         
         # 检查模型是否需要languages输入
@@ -165,17 +179,16 @@ class PredVariance:
                 current_variances[v_name] = np.zeros((1, T_s), dtype=np.float32)
         
         # 创建retake mask
-        retake_mask = np.zeros((1, T_s, 3), dtype=np.bool_)
+        retake_mask = np.zeros((1, T_s, len(self.variance_prediction_list)), dtype=np.bool_)
         
         if retake_all:
             # 重新预测所有参数
-            for i, v_name in enumerate(['breathiness', 'voicing', 'tension']):
-                if v_name in self.variance_prediction_list:
-                    retake_mask[0, :, i] = True
+            for i, v_name in enumerate(self.variance_prediction_list):
+                retake_mask[0, :, i] = True
         else:
             # 只预测没有提供的参数
-            for i, v_name in enumerate(['breathiness', 'voicing', 'tension']):
-                if v_name in self.variance_prediction_list and v_name not in ds:
+            for i, v_name in enumerate(self.variance_prediction_list):
+                if v_name not in ds:
                     retake_mask[0, :, i] = True
         
         # 准备说话人嵌入
@@ -265,7 +278,7 @@ def main():
     pred_vocoder = PredVocoder(dsvocoder)
     
     # 读取DS文件
-    ds_file = "samples/00_我多想说再见啊.1.ds"
+    ds_file = "samples/00_我多想说再见啊.ds"
     ds_reader = DSReader(ds_file)
     ds_sections = ds_reader.read_ds()
     

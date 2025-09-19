@@ -116,9 +116,8 @@ class DSReader:
 if __name__ == "__main__":
     from pathlib import Path
     
-    ds_path = Path('samples/00_我多想说再见啊.1.ds')
-    phome_dict = TextDictionary('dictionaries/opencpop-extension.txt')
+    ds_path = Path('samples/00_我多想说再见啊.ds')
     ds_reader = DSReader(ds_path)
     ds = ds_reader.read_ds()
-    print(ds)
+    print(ds[0])
     print(ds[0].gen_ph_num())

@@ -1,7 +1,7 @@
 # DiffSinger UTAU
 
 DiffSinger UTAU 推理工具包，提供命令行工具和 Python API 进行语音合成。
-基于 [diffsinger](https://diffsinger.com/) 项目，兼容 OpenUtau 声库。
+基于 [diffsinger](https://github.com/openvpi/DiffSinger) 项目，兼容 OpenUtau 声库。
 
 ## 功能特性
 
@@ -12,11 +12,18 @@ DiffSinger UTAU 推理工具包，提供命令行工具和 Python API 进行语�
 
 ## 安装
 
+由于[历史原因](https://github.com/openvpi/DiffSinger/blob/main/docs/GettingStarted.md#deployment)，强依赖 PyTorch 1.13，因此建议使用 Python 3.8。
+
+### 从 PyPI 安装
+
+```bash
+pip install diffsinger-utau
+```
 ### 从源码安装
 
 ```bash
 # 克隆仓库
-git clone https://github.com/yourusername/diffsinger-utau.git
+git clone https://github.com/bingcheng1998/diffsinger_utau.git
 cd diffsinger-utau
 
 # 创建虚拟环境（推荐使用 Python 3.8）
@@ -27,17 +34,11 @@ conda activate diffsinger
 pip install -e .
 ```
 
-### 从 PyPI 安装（待发布）
-
-```bash
-pip install diffsinger-utau
-```
-
 ## 使用方法
 
 ### 下载声库
 
-什么是声库？声库可以理解为`歌唱者`的模型，有着各自的音色等特性。
+什么是声库？声库可以理解为歌唱者的模型，有着各自的音色等特性。
 
 社区提供了[DiffSinger自制声库分享](https://docs.qq.com/sheet/DQXNDY0pPaEpOc3JN)，如果你不确定下载哪个，推荐从[zhibin club](https://www.zhibin.club/)下载[姜柯JiangKe](https://pan.quark.cn/s/254f030af8cb#/list/share/0929019064004907b7b95212c03066ed)声库开始尝试。
 
@@ -57,7 +58,7 @@ dsutau samples/07_春江花月夜.ds
 
 # 指定语音库和参数
 dsutau samples/07_春江花月夜.ds \
-  --voice-bank artifacts/JiangKe_DiffSinger_CE_25.06 \
+  --voice-bank /Users/bc/Music/Singers/Junninghua_v1.4.0_DiffSinger_OpenUtau  \
   --lang zh \
   --speaker "jiangke" \
   --key-shift 2 \
@@ -165,6 +166,9 @@ MIT License
 欢迎提交 Issue 和 Pull Request！
 
 ## 更新日志
+
+### v0.1.2
+- 兼容并测试通过声库[JiangKe, LuoXi, YunYe, ZhiBin](https://pan.quark.cn/s/254f030af8cb#/list/share/0929019064004907b7b95212c03066ed)
 
 ### v0.1.0
 - 初始版本

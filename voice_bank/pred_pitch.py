@@ -151,11 +151,17 @@ class PredPitch:
         base_pitch = inputs['base_pitch']
         T_s = base_pitch.shape[1]
         
+        word_dur = inputs['word_dur'].numpy().astype(np.int64)
+        ph_num_str = ds['ph_num']  # 这是字符串，如 "2 2 1 2 2 2 2 2 1 2 2 2 1 1"
+        word_div = np.array(ph_num_str.split(), dtype=np.int64)
+        
         # 运行linguistic encoder
         print(f"  运行linguistic encoder...")
         linguistic_inputs = {
             'tokens': inputs['tokens'].detach().numpy().astype(np.int64),
-            'ph_dur': inputs['ph_dur'].detach().numpy().astype(np.int64)
+            'ph_dur': inputs['ph_dur'].detach().numpy().astype(np.int64),
+            'word_dur': word_dur,
+            'word_div': word_div[None].astype(np.int64)
         }
         if 'languages' in inputs:
             linguistic_inputs['languages'] = inputs['languages'].detach().numpy().astype(np.int64)

@@ -46,140 +46,170 @@ def format_repr(class_name, **kwargs):
     return "\n".join(lines)
 
 class OnnxReader:
-        def __init__(self, onnx_path, preload_models=False):
-            self.onnx_path = onnx_path
-            self.session = None
-            self.input_names = []
-            self.output_names = []
-            self.input_shapes = {}
-            self.output_shapes = {}
-            self.model_size = 0
+    def __init__(self, onnx_path, preload_models=False):
+        self.onnx_path = onnx_path
+        self.session = None
+        self.input_names = []
+        self.output_names = []
+        self.input_shapes = {}
+        self.output_shapes = {}
+        self.model_size = 0
 
-            if preload_models:
-                self.load_model()
+        if preload_models:
+            self.load_model()
+        
+    def load_model(self, device='cpu'):
+        """加载ONNX模型"""
+        try:
+            import onnxruntime as ort
             
-        def load_model(self, device='cpu'):
-            """加载ONNX模型"""
-            try:
-                import onnxruntime as ort
-                
-                # 设置日志等级为 ERROR（只显示错误，不显示 Warning/Info）
-                so = ort.SessionOptions()
-                so.log_severity_level = 3   # 0=VERBOSE, 1=INFO, 2=WARNING, 3=ERROR, 4=FATAL
-                
-                # 设置执行提供者
-                providers = ['CPUExecutionProvider']
-                if device in ['cuda', None] and 'CUDAExecutionProvider' in ort.get_available_providers():
-                    providers = ['CUDAExecutionProvider', 'CPUExecutionProvider']
-                elif device in ['mps', None] and 'CoreMLExecutionProvider' in ort.get_available_providers():
-                    providers = [
-                        ('CoreMLExecutionProvider', {
-                            "ModelFormat": "MLProgram", "MLComputeUnits": "ALL", 
-                            "RequireStaticInputShapes": "0", "EnableOnSubgraphs": "0"
-                        }),
-                    ]
-                
-                # 加载模型
-                self.session = ort.InferenceSession(str(self.onnx_path), sess_options=so, providers=providers)
-                
-                # 获取输入输出信息
-                self.input_names = [inp.name for inp in self.session.get_inputs()]
-                self.output_names = [out.name for out in self.session.get_outputs()]
-                
-                # 获取输入输出形状
-                for inp in self.session.get_inputs():
-                    self.input_shapes[inp.name] = inp.shape
-                for out in self.session.get_outputs():
-                    self.output_shapes[out.name] = out.shape
-                
-                # 获取模型文件大小
-                import os
-                self.model_size = os.path.getsize(self.onnx_path)
-                
-                print(f"ONNX模型加载成功: {self.onnx_path}")
-                print(f"  输入: {self.input_names}")
-                print(f"  输出: {self.output_names}")
-                print(f"  模型大小: {self.model_size / 1024 / 1024:.2f} MB")
-                
-                return True
-                
-            except Exception as e:
-                print(f"加载ONNX模型失败: {e}")
-                return False
-        
-        def predict(self, inputs):
-            """使用ONNX模型进行推理"""
-            if self.session is None:
-                if not self.load_model():
-                    raise RuntimeError("模型加载失败")
+            # 设置日志等级为 ERROR（只显示错误，不显示 Warning/Info）
+            so = ort.SessionOptions()
+            so.log_severity_level = 3   # 0=VERBOSE, 1=INFO, 2=WARNING, 3=ERROR, 4=FATAL
             
-            try:
-                # 运行推理
-                outputs = self.session.run(self.output_names, inputs)
+            # 设置执行提供者
+            providers = ['CPUExecutionProvider']
+            if device in ['cuda', None] and 'CUDAExecutionProvider' in ort.get_available_providers():
+                providers = ['CUDAExecutionProvider', 'CPUExecutionProvider']
+            elif device in ['mps', None] and 'CoreMLExecutionProvider' in ort.get_available_providers():
+                providers = [
+                    ('CoreMLExecutionProvider', {
+                        "ModelFormat": "MLProgram", "MLComputeUnits": "ALL", 
+                        "RequireStaticInputShapes": "0", "EnableOnSubgraphs": "0"
+                    }),
+                ]
+            
+            # 加载模型
+            self.session = ort.InferenceSession(str(self.onnx_path), sess_options=so, providers=providers)
+            
+            # 获取输入输出信息
+            self.input_names = [inp.name for inp in self.session.get_inputs()]
+            self.output_names = [out.name for out in self.session.get_outputs()]
+            
+            # 获取输入输出形状
+            for inp in self.session.get_inputs():
+                self.input_shapes[inp.name] = inp.shape
+            for out in self.session.get_outputs():
+                self.output_shapes[out.name] = out.shape
+            
+            # 获取模型文件大小
+            import os
+            self.model_size = os.path.getsize(self.onnx_path)
+            
+            print(f"ONNX模型加载成功: {self.onnx_path}")
+            print(f"  输入: {self.input_names}")
+            print(f"  输出: {self.output_names}")
+            print(f"  模型大小: {self.model_size / 1024 / 1024:.2f} MB")
+            
+            return True
+            
+        except Exception as e:
+            print(f"加载ONNX模型失败: {e}")
+            return False
+    
+    def predict(self, inputs):
+        """使用ONNX模型进行推理"""
+        if self.session is None:
+            if not self.load_model():
+                raise RuntimeError("模型加载失败")
+            
+        # 删除 inputs 中无用key
+        filtered_inputs = {}
+        for name in self.input_names:
+            if name in inputs:
+                filtered_inputs[name] = inputs[name]
+                continue
+            if name == 'speedup':
+                filtered_inputs['speedup'] = np.array(1, dtype=np.int64)
+            elif name == 'energy':
+                filtered_inputs[name] = np.array([[0.0]], dtype=np.float32)
+            elif name == 'voicing':
+                filtered_inputs[name] = np.array([[0.0]], dtype=np.float32)
+            elif name == 'breathiness':
+                filtered_inputs[name] = np.array([[0.0]], dtype=np.float32)
+            elif name == 'tension':
+                filtered_inputs[name] = np.array([[0.0]], dtype=np.float32)
+        
+        try:
+            # 运行推理
+            outputs = self.session.run(self.output_names, filtered_inputs)
+            
+            # 如果只有一个输出，直接返回
+            if len(outputs) == 1:
+                return outputs[0]
+            else:
+                # 返回所有输出
+                return outputs
                 
-                # 如果只有一个输出，直接返回
-                if len(outputs) == 1:
-                    return outputs[0]
-                else:
-                    # 返回所有输出
-                    return outputs
-                    
-            except Exception as e:
-                print(f"ONNX推理失败: {e}")
-                raise
-        
-        def get_model_info(self):
-            """获取模型信息"""
-            return {
-                'input_names': self.input_names,
-                'output_names': self.output_names,
-                'input_shapes': self.input_shapes,
-                'output_shapes': self.output_shapes,
-                'model_size': self.model_size
-            }
-        
-        def __repr__(self):
-            return format_repr("OnnxReader", 
-                             onnx_path=self.onnx_path,
-                             loaded=self.session is not None,
-                             input_names=self.input_names,
-                             output_names=self.output_names,
-                             model_size_mb=f"{self.model_size / 1024 / 1024:.2f} MB" if self.model_size > 0 else "Unknown")
+        except Exception as e:
+            print(f"ONNX推理失败: {e}")
+            raise
+    
+    def get_model_info(self):
+        """获取模型信息"""
+        return {
+            'input_names': self.input_names,
+            'output_names': self.output_names,
+            'input_shapes': self.input_shapes,
+            'output_shapes': self.output_shapes,
+            'model_size': self.model_size
+        }
+    
+    def __repr__(self):
+        return format_repr("OnnxReader", 
+                            onnx_path=self.onnx_path,
+                            loaded=self.session is not None,
+                            input_names=self.input_names,
+                            output_names=self.output_names,
+                            model_size_mb=f"{self.model_size / 1024 / 1024:.2f} MB" if self.model_size > 0 else "Unknown")
             
 class JsonReader:
-        def __init__(self, json_path):
+    def __init__(self, json_path):
+        self.json_path = json_path
+        with open(json_path, 'r') as f:
+            self.content = json.load(f)
+            self._phone_to_id = self.content
+            langs = set()
+            for k in self.content.keys():
+                langs.add(k.split('/')[0])
+            self._multi_langs = len(langs) > 1
+    
+    def __repr__(self):
+        return format_repr("JsonReader", 
+                            json_path=self.json_path,
+                            content_length=len(self.content),
+                            content_preview=str(self.content)[:100] + ('...' if len(str(self.content)) > 100 else ''))
+
+    def is_cross_lingual(self, phone):
+        return False
+
+    def encode_one(self, phone, lang=None):
+        if phone in ['AP', 'EP', 'SP', 'GS']:
+            return self._phone_to_id[phone]
+        if '/' in phone:
+            lang, phone = phone.split('/', maxsplit=1)
+        if lang is None or not self._multi_langs or phone in self._phone_to_id:
+            return self._phone_to_id[phone]
+        if '/' not in phone:
+            phone = f'{lang}/{phone}'
+        return self._phone_to_id[phone]
+
+    def encode(self, sentence, lang=None):
+        phones = sentence.strip().split() if isinstance(sentence, str) else sentence
+        return [self.encode_one(phone, lang=lang) for phone in phones]
+        
+class TextReader(JsonReader):
+    def __init__(self, json_path):
             self.json_path = json_path
             with open(json_path, 'r') as f:
-                self.content = json.load(f)
+                self.content = {}
+                for i, line in enumerate(f):
+                    self.content[line.strip()] = i
                 self._phone_to_id = self.content
                 langs = set()
                 for k in self.content.keys():
                     langs.add(k.split('/')[0])
                 self._multi_langs = len(langs) > 1
-        
-        def __repr__(self):
-            return format_repr("JsonReader", 
-                             json_path=self.json_path,
-                             content_length=len(self.content),
-                             content_preview=str(self.content)[:100] + ('...' if len(str(self.content)) > 100 else ''))
-
-        def is_cross_lingual(self, phone):
-            return False
-
-        def encode_one(self, phone, lang=None):
-            if phone in ['AP', 'EP', 'SP', 'GS']:
-                return self._phone_to_id[phone]
-            if '/' in phone:
-                lang, phone = phone.split('/', maxsplit=1)
-            if lang is None or not self._multi_langs or phone in self._phone_to_id:
-                return self._phone_to_id[phone]
-            if '/' not in phone:
-                phone = f'{lang}/{phone}'
-            return self._phone_to_id[phone]
-
-        def encode(self, sentence, lang=None):
-            phones = sentence.strip().split() if isinstance(sentence, str) else sentence
-            return [self.encode_one(phone, lang=lang) for phone in phones]
 
 class SpkEmbededReader:
     '''
@@ -204,7 +234,7 @@ class SpkEmbededReader:
             
 
 class VoiceBankReader:
-    def __init__(self, voice_bank_path, preload_models=False):
+    def __init__(self, voice_bank_path, preload_models=True):
         self.voice_bank_path = voice_bank_path
         self.preload_models = preload_models
         self.dsdur = self.DSDur(voice_bank_path / 'dsdur' / 'dsconfig.yaml', preload_models)
@@ -232,7 +262,7 @@ class VoiceBankReader:
             self.character_path = character_yaml_path
             with open(character_yaml_path, 'r') as f:
                 self.character: dict = yaml.safe_load(f)
-                self.subbanks = [self.SubBank(**subbank) for subbank in self.character['subbanks']]
+                self.subbanks = [self.SubBank(**subbank) for subbank in self.character.get('subbanks', [])]
                 self.portrait = self.character['portrait']
                 self.portrait_opacity = self.character['portrait_opacity']
                 self.singer_type = self.character['singer_type']
@@ -271,13 +301,20 @@ class VoiceBankReader:
             self.config_path = config_path
             self.config_dir = config_path.parent
             self.preload_models = preload_models
+            self.languages = None
+            self.phonemes = None
             with open(config_path, 'r') as f:
                 self.config = yaml.safe_load(f)
                 self.linguistic_model = OnnxReader(self.config_dir / self.config['linguistic'], preload_models)
-                self.use_lang_id = self.config['use_lang_id']
-                self.speakers = [SpkEmbededReader(speaker, self.config_dir / f"{speaker}.emb") for speaker in self.config['speakers']]
-                self.languages = JsonReader(self.config_dir / self.config['languages'])
-                self.phonemes = JsonReader(self.config_dir / self.config['phonemes'])
+                self.use_lang_id = self.config.get('use_lang_id', False)
+                self.speakers = [SpkEmbededReader(speaker, self.config_dir / f"{speaker}.emb") for speaker in self.config.get('speakers', [])]
+                if 'languages' in self.config:
+                    self.languages = JsonReader(self.config_dir / self.config['languages'])
+                if 'phonemes' in self.config:
+                    if self.config['phonemes'].endswith('json'):
+                        self.phonemes = JsonReader(self.config_dir / self.config['phonemes'])
+                    elif self.config['phonemes'].endswith('txt'):
+                        self.phonemes = TextReader(self.config_dir / self.config['phonemes'])
 
             
     '''
@@ -305,10 +342,10 @@ class VoiceBankReader:
         def __init__(self, config_path, preload_models=False):
             super().__init__(config_path, preload_models)
             self.pitch_model = OnnxReader(self.config_dir / self.config['pitch'], preload_models)
-            self.hidden_size = self.config['hidden_size']
+            self.hidden_size = self.config.get('hidden_size')
             self.hop_size = self.config['hop_size']
             self.sample_rate = self.config['sample_rate']
-            self.use_continuous_acceleration = self.config['use_continuous_acceleration']
+            self.use_continuous_acceleration = self.config.get('use_continuous_acceleration')
             self.use_expr = self.config.get('use_expr', False)
             self.use_note_rest = self.config.get('use_note_rest', False)
             self.predict_breathiness = self.config.get('predict_breathiness', False)
@@ -349,15 +386,16 @@ class VoiceBankReader:
         def __init__(self, config_path, preload_models=False):
             super().__init__(config_path, preload_models)
             self.variance_model = OnnxReader(self.config_dir / self.config['variance'], preload_models)
-            self.hidden_size = self.config['hidden_size']
+            self.hidden_size = self.config.get('hidden_size')
             self.hop_size = self.config['hop_size']
             self.sample_rate = self.config['sample_rate']
-            self.use_continuous_acceleration = self.config['use_continuous_acceleration']
+            self.use_continuous_acceleration = self.config.get('use_continuous_acceleration')
             self.predict_breathiness = self.config.get('predict_breathiness', False)
             self.predict_dur = self.config.get('predict_dur', False)
             self.predict_energy = self.config.get('predict_energy', False)
             self.predict_tension = self.config.get('predict_tension', False)
             self.predict_voicing = self.config.get('predict_voicing', False)
+            
                 
         def __repr__(self):
             return format_repr("DSVariance",
@@ -386,16 +424,18 @@ class VoiceBankReader:
             self.config_path = config_path
             self.config_dir = config_path.parent
             self.preload_models = preload_models
+            self.languages = None
+            self.phonemes = None
             with open(config_path, 'r') as f:
                 self.config = yaml.safe_load(f)
                 self.acoustic_model = OnnxReader(self.config_dir / self.config['acoustic'], preload_models)
-                self.fft_size = self.config['fft_size']
-                self.hidden_size = self.config['hidden_size']
-                self.hop_size = self.config['hop_size']
-                self.win_size = self.config['win_size']
-                self.sample_rate = self.config['sample_rate']
-                self.speakers = [SpkEmbededReader(speaker, self.config_dir / f"{speaker}.emb") for speaker in self.config['speakers']]
-                self.use_lang_id = self.config['use_lang_id']
+                self.fft_size = self.config.get('fft_size')
+                self.hidden_size = self.config.get('hidden_size')
+                self.hop_size = self.config.get('hop_size', 512)
+                self.win_size = self.config.get('win_size')
+                self.sample_rate = self.config.get('sample_rate', 44100)
+                self.speakers = [SpkEmbededReader(speaker, self.config_dir / f"{speaker}.emb") for speaker in self.config.get('speakers', [])]
+                self.use_lang_id = self.config.get('use_lang_id')
                 self.use_breathiness_embed = self.config.get('use_breathiness_embed', False)
                 self.use_continuous_acceleration = self.config.get('use_continuous_acceleration', False)
                 self.use_energy_embed = self.config.get('use_energy_embed', False)
@@ -412,8 +452,13 @@ class VoiceBankReader:
                 self.num_mel_bins = self.config.get('num_mel_bins', 128)
                 self.max_depth = self.config.get('max_depth', 0.6)
                 self.augmentation_args = self.config.get('augmentation_args', {})
-                self.languages = JsonReader(self.config_dir / self.config['languages'])
-                self.phonemes = JsonReader(self.config_dir / self.config['phonemes'])
+                if 'languages' in self.config:
+                    self.languages = JsonReader(self.config_dir / self.config['languages'])
+                if 'phonemes' in self.config:
+                    if self.config['phonemes'].endswith('json'):
+                        self.phonemes = JsonReader(self.config_dir / self.config['phonemes'])
+                    elif self.config['phonemes'].endswith('txt'):
+                        self.phonemes = TextReader(self.config_dir / self.config['phonemes'])
                 
         def __repr__(self):
             return format_repr("DSAcoustic",
@@ -512,7 +557,7 @@ if __name__ == '__main__':
     from pathlib import Path
     
     voice_bank_path = Path('artifacts/JiangKe_DiffSinger_CE_25.06')
-    voice_bank_reader = VoiceBankReader(voice_bank_path, preload_models=True)
+    voice_bank_reader = VoiceBankReader(voice_bank_path)
     print('=' * 40)
     print(voice_bank_reader.dsdur)
     print('=' * 40)
