@@ -5,6 +5,8 @@ from .pred_variance import PredVariance
 from .pred_acoustic import PredAcoustic
 from .pred_vocoder import PredVocoder
 
+__version__ = "0.1.4"
+
 __all__ = [
     "PredAll",
     "PredDuration",

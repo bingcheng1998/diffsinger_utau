@@ -13,15 +13,11 @@ from pathlib import Path
 import numpy as np
 import librosa
 
-# 添加当前目录到路径
-current_dir = Path(__file__).parent
-sys.path.insert(0, str(current_dir))
-
-from commons.voice_bank_reader import VoiceBankReader
-from commons.ds_reader import DSReader
-from commons.utils import resample_align_curve, encode_phonemes
-from commons.utils import save_mel_and_f0_as_json
-from commons.variance_input_processor import VarianceInputProcessor
+from .commons.voice_bank_reader import VoiceBankReader
+from .commons.ds_reader import DSReader
+from .commons.utils import resample_align_curve, encode_phonemes
+from .commons.utils import save_mel_and_f0_as_json
+from .commons.variance_input_processor import VarianceInputProcessor
 
 class PredVariance:
     """方差预测器"""
@@ -271,8 +267,8 @@ def main():
     pred_variance = PredVariance(dsvariance)
     
     # 导入其他预测器
-    from pred_acoustic import PredAcoustic
-    from pred_vocoder import PredVocoder
+    from .pred_acoustic import PredAcoustic
+    from .pred_vocoder import PredVocoder
     
     pred_acoustic = PredAcoustic(dsacoustic)
     pred_vocoder = PredVocoder(dsvocoder)

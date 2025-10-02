@@ -9,11 +9,9 @@ from pathlib import Path
 import sys
 import os
 
-# 添加上级目录到路径
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from commons.voice_bank_reader import format_repr
-from commons.utils import TextDictionary
-from commons.phome_num_counter import Phome
+from .voice_bank_reader import format_repr
+from .utils import TextDictionary
+from .phome_num_counter import Phome
 
 
 class DSReader:

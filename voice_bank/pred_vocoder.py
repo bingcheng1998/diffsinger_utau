@@ -13,12 +13,8 @@ from pathlib import Path
 
 import numpy as np
 
-# 添加当前目录到路径
-current_dir = Path(__file__).parent
-sys.path.insert(0, str(current_dir))
-
-from commons.voice_bank_reader import VoiceBankReader
-from commons.utils import resample_align_curve
+from .commons.voice_bank_reader import VoiceBankReader
+from .commons.utils import resample_align_curve
 
 
 class PredVocoder:

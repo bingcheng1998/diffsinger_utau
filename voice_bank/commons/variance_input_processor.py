@@ -15,10 +15,8 @@ import librosa
 from scipy import interpolate
 import torch.nn.functional as F
 
-# 添加上级目录到路径
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from commons.voice_bank_reader import VoiceBankReader
-from commons.tts_modules import LengthRegulator, mel2ph_to_dur
+from .voice_bank_reader import VoiceBankReader
+from .tts_modules import LengthRegulator, mel2ph_to_dur
 
 VARIANCE_CHECKLIST = ['energy', 'breathiness', 'voicing', 'tension']
 

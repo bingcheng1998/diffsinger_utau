@@ -13,14 +13,10 @@ import numpy as np
 import torch
 from typing import Optional, Union
 
-# 添加当前目录到路径
-current_dir = Path(__file__).parent
-sys.path.insert(0, str(current_dir))
-
-from commons.voice_bank_reader import VoiceBankReader
-from commons.ds_reader import DSReader
-from commons.variance_input_processor import VarianceInputProcessor
-from commons.tts_modules import RhythmRegulator
+from .commons.voice_bank_reader import VoiceBankReader
+from .commons.ds_reader import DSReader
+from .commons.variance_input_processor import VarianceInputProcessor
+from .commons.tts_modules import RhythmRegulator
 
 
 class PredDuration:

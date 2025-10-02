@@ -6,9 +6,9 @@ import numpy as np
 from pathlib import Path
 from typing import Dict, Any, Optional
 
-from commons.voice_bank_reader import VoiceBankReader
-from commons.ds_reader import DSReader
-from commons.utils import save_mel_and_f0_as_json, resample_align_curve, encode_phonemes, calculate_durations
+from .commons.voice_bank_reader import VoiceBankReader
+from .commons.ds_reader import DSReader
+from .commons.utils import save_mel_and_f0_as_json, resample_align_curve, encode_phonemes, calculate_durations
 
 
 class PredAcoustic:
@@ -278,7 +278,7 @@ if __name__ == "__main__":
     )
     
     # 导入其他预测器
-    from pred_vocoder import PredVocoder
+    from .pred_vocoder import PredVocoder
     dsvocoder = voice_bank_reader.get_dsvocoder()
     pred_vocoder = PredVocoder(dsvocoder)
     pred_vocoder = PredVocoder(dsvocoder)

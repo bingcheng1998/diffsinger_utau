@@ -13,20 +13,16 @@ from typing import Optional, Dict, Any
 
 import numpy as np
 
-# 添加当前目录到路径
-current_dir = Path(__file__).parent
-sys.path.insert(0, str(current_dir))
-
-from commons.voice_bank_reader import VoiceBankReader
-from commons.ds_reader import DSReader
-from commons.utils import save_mel_and_f0_as_json, resample_align_curve
+from .commons.voice_bank_reader import VoiceBankReader
+from .commons.ds_reader import DSReader
+from .commons.utils import save_mel_and_f0_as_json, resample_align_curve
 
 # 导入各个预测器
-from pred_duration import PredDuration
-from pred_pitch import PredPitch
-from pred_variance import PredVariance
-from pred_acoustic import PredAcoustic
-from pred_vocoder import PredVocoder
+from .pred_duration import PredDuration
+from .pred_pitch import PredPitch
+from .pred_variance import PredVariance
+from .pred_acoustic import PredAcoustic
+from .pred_vocoder import PredVocoder
 
 
 class PredAll:

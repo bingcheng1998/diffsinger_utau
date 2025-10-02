@@ -8,6 +8,7 @@ import numpy as np
 
 from .pred_all import PredAll
 from .commons.ds_reader import DSReader
+from . import __version__
 
 
 def build_parser():
@@ -15,6 +16,7 @@ def build_parser():
         prog="dsutau",
         description="DiffSinger UTAU 推理命令行工具"
     )
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     parser.add_argument("ds", type=str, help="输入的 .ds 文件路径")
     parser.add_argument("--voice-bank", dest="voice_bank", type=str,
                         default="artifacts/JiangKe_DiffSinger_CE_25.06",

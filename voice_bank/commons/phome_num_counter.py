@@ -1,8 +1,8 @@
 from typing import List
 from pypinyin import pinyin, Style
 from itertools import groupby
-from commons.utils import pinyin_initials, pinyin_finals
-from commons.voice_bank_reader import format_repr
+from .utils import pinyin_initials, pinyin_finals
+from .voice_bank_reader import format_repr
 
 class Phome:
     def __init__(self, phome_seq: List[str]):
