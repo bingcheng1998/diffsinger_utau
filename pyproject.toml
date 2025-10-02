@@ -44,7 +44,7 @@ dev = [
 ]
 
 [project.scripts]
-dsutau = "voice_bank.cli:main"
+dsutau = "diffsinger_utau.voice_bank.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/bingcheng1998/diffsinger_utau"
@@ -55,12 +55,12 @@ Issues = "https://github.com/bingcheng1998/diffsinger_utau/issues"
 package-dir = {"" = "."}
 
 [tool.setuptools.dynamic]
-version = {attr = "voice_bank.__version__"}
+version = {attr = "diffsinger_utau.voice_bank.__version__"}
 
 [tool.setuptools.packages.find]
 where = ["."]
 include = [
-  "voice_bank",
-  "voice_bank.*",
+  "diffsinger_utau",
+  "diffsinger_utau.*",
 ]
 

@@ -8,7 +8,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 # 读取版本信息
-with open("voice_bank/__init__.py", "r", encoding="utf-8") as fh:
+with open("diffsinger_utau/voice_bank/__init__.py", "r", encoding="utf-8") as fh:
     for line in fh:
         if line.startswith("__version__"):
             version = line.split("=")[1].strip().strip('"').strip("'")

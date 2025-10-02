@@ -54,10 +54,10 @@ pip install -e .
 
 ```bash
 # 基本用法
-dsutau samples/07_春江花月夜.ds
+dsutau diffsinger_utau/samples/07_春江花月夜.ds
 
 # 指定语音库和参数
-dsutau samples/07_春江花月夜.ds \
+dsutau diffsinger_utau/samples/07_春江花月夜.ds \
   --voice-bank /Users/bc/Music/Singers/Junninghua_v1.4.0_DiffSinger_OpenUtau  \
   --lang zh \
   --speaker "jiangke" \

@@ -63,3 +63,4 @@ echo ""
 echo "📁 构建文件位置:"
 echo "   - 源码包: dist/diffsinger_utau-*.tar.gz"
 echo "   - 轮子包: dist/diffsinger_utau-*.whl"
+

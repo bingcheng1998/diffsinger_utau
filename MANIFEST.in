@@ -2,7 +2,9 @@ include README.md
 include LICENSE
 include pyproject.toml
 include setup.py
-recursive-include voice_bank *.py
+recursive-include diffsinger_utau *.py
+recursive-include diffsinger_utau/samples *.ds
+recursive-include diffsinger_utau/dictionaries *.txt
 
 # 不将大型模型与输出目录打包进入 sdist
 prune artifacts
