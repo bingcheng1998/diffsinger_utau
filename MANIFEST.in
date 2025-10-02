@@ -3,12 +3,6 @@ include LICENSE
 include pyproject.toml
 include setup.py
 recursive-include voice_bank *.py
-recursive-include voice_bank *.yaml
-recursive-include voice_bank *.yml
-recursive-include voice_bank *.txt
-recursive-include voice_bank *.json
-recursive-include samples *.ds
-recursive-include samples *.txt
 
 # 不将大型模型与输出目录打包进入 sdist
 prune artifacts
