@@ -73,8 +73,8 @@ dsutau diffsinger_utau/samples/07_春江花月夜.ds \
 
 ```python
 from pathlib import Path
-from voice_bank import PredAll
-from voice_bank.commons.ds_reader import DSReader
+from diffsinger_utau.voice_bank import PredAll
+from diffsinger_utau.voice_bank.commons.ds_reader import DSReader
 
 # 初始化预测器
 voice_bank = Path("artifacts/JiangKe_DiffSinger_CE_25.06")

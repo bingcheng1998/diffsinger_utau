@@ -14,6 +14,10 @@ from .voice_bank import (
     __version__
 )
 
+# 导入子模块以确保它们被正确识别为包的一部分
+from . import samples
+from . import dictionaries
+
 __all__ = [
     "PredAll",
     "PredDuration", 
@@ -21,5 +25,7 @@ __all__ = [
     "PredVariance",
     "PredAcoustic",
     "PredVocoder",
-    "__version__"
+    "__version__",
+    "samples",
+    "dictionaries"
 ]

@@ -2,12 +2,14 @@
 这个文件用于读取 ds 文件，并返回一个字典
 '''
 
+import sys
+import os
 import json
 from typing import Any, Dict, List
 from collections import defaultdict
 from pathlib import Path
-import sys
-import os
+from pypinyin import pinyin, Style
+import pkg_resources
 
 from .voice_bank_reader import format_repr
 from .utils import TextDictionary
@@ -21,11 +23,15 @@ class DSReader:
             super().__init__(str)
             if ds:                 # 如果传了 dict，就更新
                 self.update(ds)
+            self.ds_replacer = DSTextReplacer()
             self.verify()
 
         def gen_ph_num(self) -> list:
             phome = Phome(self.get_list('ph_seq'))
             return phome
+
+        def replace(self, text: str):
+            return self.ds_replacer.replace(self, text)
 
         def get_list(self, key: str) -> list:
             if key not in self:
@@ -110,6 +116,67 @@ class DSReader:
                          ds_path=self.ds_path,
                          ds=self.ds[0])
 
+
+class DSTextReplacer:
+    _instance = None
+    _initialized = False
+    
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(DSTextReplacer, cls).__new__(cls)
+        return cls._instance
+    
+    def __init__(self):
+        if not self._initialized:
+            self.opencpop_dict = self.get_opencpop_dict()
+            DSTextReplacer._initialized = True
+    
+    def get_opencpop_dict(self):
+        """使用 pkg_resources 获取字典文件"""
+        try:
+            # 使用 pkg_resources 获取包内资源
+            resource_path = pkg_resources.resource_filename('diffsinger_utau', 'dictionaries/opencpop-extension.txt')
+            with open(resource_path, 'r', encoding='utf-8') as f:
+                result = {
+                    'AP': 'AP',
+                    'SP': 'SP'
+                }
+                for line in f:
+                    if '\t' in line:
+                        result[line.split("\t")[0].strip()] = line.split("\t")[1].strip()
+                return result
+        except (FileNotFoundError, ModuleNotFoundError):
+            # 降级到相对路径（开发环境）
+            fallback_path = os.path.join(os.path.dirname(__file__), '../../dictionaries/opencpop-extension.txt')
+            with open(fallback_path, 'r', encoding='utf-8') as f:
+                result = {
+                    'AP': 'AP',
+                    'SP': 'SP'
+                }
+                for line in f:
+                    if '\t' in line:
+                        result[line.split("\t")[0].strip()] = line.split("\t")[1].strip()
+                return result
+
+    def get_phonemes(self, text, opencpop_dict):
+        pinyins = [x[0] for x in pinyin(text, style=Style.NORMAL)]
+        result = []
+        for py in pinyins:
+            py = py.strip()
+            if not py:
+                continue
+            if py in opencpop_dict:
+                result.append(opencpop_dict[py])
+            else:
+                result.append(py)
+        result = str(' '.join(result)).split()
+        return result
+
+    def replace(self, ds, text: str):
+        phonemes = self.get_phonemes(text, self.opencpop_dict)
+        ds["ph_seq"] = ' '.join(phonemes)
+        ds["ph_num"] = ' '.join(map(str, Phome(phonemes).get_ph_num()))
+        return ds
 
 if __name__ == "__main__":
     from pathlib import Path
