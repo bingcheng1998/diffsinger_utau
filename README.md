@@ -83,6 +83,9 @@ predictor = PredAll(voice_bank)
 # 读取 DS 文件
 ds = DSReader("samples/07_春江花月夜.ds").read_ds()[0]
 
+# 修改歌词
+ds.replace("SP 可爱小狗汪汪叫 SP")
+
 # 执行完整推理
 results = predictor.predict_full_pipeline(
     ds=ds,

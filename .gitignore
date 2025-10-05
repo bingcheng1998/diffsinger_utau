@@ -155,3 +155,5 @@ test_output/
 temp/
 samples/
 artifacts/
+process_json*.sh
+test_data.json

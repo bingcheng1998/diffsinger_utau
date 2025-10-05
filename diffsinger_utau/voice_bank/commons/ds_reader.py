@@ -176,6 +176,7 @@ class DSTextReplacer:
         phonemes = self.get_phonemes(text, self.opencpop_dict)
         ds["ph_seq"] = ' '.join(phonemes)
         ds["ph_num"] = ' '.join(map(str, Phome(phonemes).get_ph_num()))
+        ds["text"] = text
         return ds
 
 if __name__ == "__main__":
