@@ -170,6 +170,10 @@ MIT License
 
 ## 更新日志
 
+### v0.2.1
+- 内置换词API，可以直接替换歌词
+- 提升声库兼容性
+
 ### v0.1.2
 - 兼容并测试通过声库[JiangKe, LuoXi, YunYe, ZhiBin](https://pan.quark.cn/s/254f030af8cb#/list/share/0929019064004907b7b95212c03066ed)
 

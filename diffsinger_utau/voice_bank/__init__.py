@@ -5,7 +5,7 @@ from .pred_variance import PredVariance
 from .pred_acoustic import PredAcoustic
 from .pred_vocoder import PredVocoder
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 __classifiers__ = [
     "Development Status :: 3 - Alpha",
